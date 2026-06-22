@@ -1,0 +1,40 @@
+{
+  "_comment": "2026 FIFA World Cup 实际抽签结果(2025-12-05 华盛顿抽签)。12 组 × 4 队。队名已对齐历史数据规范名(经 alias_map)。R32 席位结构取自官方/ESPN 公布的对阵模板;第三名 slot 含官方来源组约束。来源: ESPN / FIFA / Al Jazeera 2026 draw。",
+
+  "hosts": ["Mexico", "Canada", "United States"],
+
+  "groups": {
+    "A": ["Mexico", "South Africa", "South Korea", "Czech Republic"],
+    "B": ["Canada", "Bosnia and Herzegovina", "Qatar", "Switzerland"],
+    "C": ["Brazil", "Morocco", "Haiti", "Scotland"],
+    "D": ["United States", "Paraguay", "Australia", "Turkey"],
+    "E": ["Germany", "Curaçao", "Ivory Coast", "Ecuador"],
+    "F": ["Netherlands", "Japan", "Sweden", "Tunisia"],
+    "G": ["Belgium", "Egypt", "Iran", "New Zealand"],
+    "H": ["Spain", "Cape Verde", "Saudi Arabia", "Uruguay"],
+    "I": ["France", "Senegal", "Iraq", "Norway"],
+    "J": ["Argentina", "Algeria", "Austria", "Jordan"],
+    "K": ["Portugal", "DR Congo", "Uzbekistan", "Colombia"],
+    "L": ["England", "Croatia", "Ghana", "Panama"]
+  },
+
+  "_r32_note": "16 场 R32,按列表顺序构成标准相邻配对淘汰树(m1-m2 -> R16, 依此类推)。这是简化的 bracket 树(非官方左右半区精确映射)。slot: winner=组头名, runner=组次名, third={allowed:[来源组]}(第三名按 best-8 选取并做满足约束的二分匹配填入 —— 官方表对每种第三名出线组合有确定映射,此处为近似,见 tournament.py)。",
+  "r32": [
+    [{"type": "runner", "group": "A"}, {"type": "runner", "group": "B"}],
+    [{"type": "winner", "group": "C"}, {"type": "runner", "group": "F"}],
+    [{"type": "winner", "group": "E"}, {"type": "third", "allowed": ["C", "D", "F", "G", "H"]}],
+    [{"type": "winner", "group": "F"}, {"type": "runner", "group": "C"}],
+    [{"type": "runner", "group": "E"}, {"type": "runner", "group": "I"}],
+    [{"type": "winner", "group": "I"}, {"type": "third", "allowed": ["C", "D", "F", "G", "H"]}],
+    [{"type": "winner", "group": "A"}, {"type": "third", "allowed": ["C", "E", "F", "H", "I"]}],
+    [{"type": "winner", "group": "L"}, {"type": "third", "allowed": ["E", "H", "I", "J", "K"]}],
+    [{"type": "winner", "group": "G"}, {"type": "third", "allowed": ["A", "E", "H", "I", "J"]}],
+    [{"type": "winner", "group": "D"}, {"type": "third", "allowed": ["B", "E", "F", "I", "J"]}],
+    [{"type": "winner", "group": "H"}, {"type": "runner", "group": "J"}],
+    [{"type": "runner", "group": "K"}, {"type": "runner", "group": "L"}],
+    [{"type": "winner", "group": "B"}, {"type": "third", "allowed": ["E", "F", "G", "I", "J"]}],
+    [{"type": "runner", "group": "D"}, {"type": "runner", "group": "G"}],
+    [{"type": "winner", "group": "J"}, {"type": "runner", "group": "H"}],
+    [{"type": "winner", "group": "K"}, {"type": "third", "allowed": ["D", "E", "I", "J", "L"]}]
+  ]
+}

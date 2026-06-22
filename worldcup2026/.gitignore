@@ -1,0 +1,6 @@
+# local data cache — regenerated from sources (cache-first ingestion)
+data/cache/
+*.parquet
+.pytest_cache/
+__pycache__/
+*.pyc

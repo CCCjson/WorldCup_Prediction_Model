@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# macOS
+.DS_Store
+
+# 下载/抓取的原始数据与派生缓存:可由 worldcup2026/data 的 ingestion 层重建。
+# 含 oddsportal 持久化浏览器 profile(cookie/session,敏感)与第三方数据集
+# (Kaggle / football-data / oddsportal,再分发有版权顾虑),一律不入库。
+worldcup2026/data/cache/
+
+# 备份文件
+*.bak
+*.bak.*

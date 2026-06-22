@@ -1,0 +1,21 @@
+{
+  "_comment": "Maps variant/historical team names -> canonical name used throughout the project. Extended iteratively as new sources are added. Keep canonical = common modern English full name (matches the 2026 groups feed). Continuity merges (predecessor state -> successor) are a deliberate modeling choice noted per entry.",
+
+  "West Germany": "Germany",
+  "Czechia": "Czech Republic",
+  "Korea Republic": "South Korea",
+  "Korea DPR": "North Korea",
+  "China PR": "China",
+  "IR Iran": "Iran",
+  "United States of America": "United States",
+  "USA": "United States",
+  "Republic of Ireland": "Ireland",
+  "Türkiye": "Turkey",
+  "Cabo Verde": "Cape Verde",
+  "Côte d'Ivoire": "Ivory Coast",
+  "Curacao": "Curaçao",
+  "Kyrgyz Republic": "Kyrgyzstan",
+  "St. Kitts and Nevis": "Saint Kitts and Nevis",
+  "St. Lucia": "Saint Lucia",
+  "St. Vincent and the Grenadines": "Saint Vincent and the Grenadines"
+}

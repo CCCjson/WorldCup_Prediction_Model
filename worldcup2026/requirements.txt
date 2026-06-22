@@ -1,0 +1,25 @@
+# Core data / numerics
+pandas>=2.2
+numpy>=1.26
+pyarrow>=15
+scipy>=1.11
+scikit-learn>=1.4
+statsmodels>=0.14
+
+# Models (later milestones)
+lightgbm>=4.1
+# pymc installed separately via conda-forge for MS3
+
+# Data ingestion
+kaggle>=1.6
+requests>=2.31
+beautifulsoup4>=4.12
+# 国家队赔率抓取(oddsportal,需 `playwright install chromium`)
+playwright>=1.40
+
+# UI / plotting (later milestones)
+streamlit>=1.33
+matplotlib>=3.8
+
+# Test
+pytest>=8.0
