@@ -1,0 +1,73 @@
+{
+  "matchday": "2026-06-22",
+  "model": "Bayesian Poisson (no_odds, headline)",
+  "trained_cutoff": "2026-06-22",
+  "note": "赛前快照:模型训练截止当日,未见过这些比赛;赛后与真实结果对照。",
+  "rhat_max": 1.01,
+  "predictions": [
+    {
+      "date": "2026-06-22",
+      "group": "J",
+      "home": "Argentina",
+      "away": "Austria",
+      "neutral": true,
+      "p_home": 0.6533,
+      "p_draw": 0.2272,
+      "p_away": 0.1195,
+      "over_2.5": 0.4045,
+      "under_2.5": 0.5955,
+      "ml_score": "1-0",
+      "ml_score_prob": 0.1727,
+      "exp_goals_home": 1.73,
+      "exp_goals_away": 0.57
+    },
+    {
+      "date": "2026-06-22",
+      "group": "C",
+      "home": "France",
+      "away": "Iraq",
+      "neutral": true,
+      "p_home": 0.7207,
+      "p_draw": 0.1937,
+      "p_away": 0.0856,
+      "over_2.5": 0.4432,
+      "under_2.5": 0.5568,
+      "ml_score": "1-0",
+      "ml_score_prob": 0.1684,
+      "exp_goals_home": 1.96,
+      "exp_goals_away": 0.5
+    },
+    {
+      "date": "2026-06-22",
+      "group": "C",
+      "home": "Norway",
+      "away": "Senegal",
+      "neutral": true,
+      "p_home": 0.3633,
+      "p_draw": 0.2924,
+      "p_away": 0.3443,
+      "over_2.5": 0.3695,
+      "under_2.5": 0.6305,
+      "ml_score": "1-1",
+      "ml_score_prob": 0.1316,
+      "exp_goals_home": 1.11,
+      "exp_goals_away": 1.07
+    },
+    {
+      "date": "2026-06-22",
+      "group": "J",
+      "home": "Jordan",
+      "away": "Algeria",
+      "neutral": true,
+      "p_home": 0.1416,
+      "p_draw": 0.2104,
+      "p_away": 0.6481,
+      "over_2.5": 0.5045,
+      "under_2.5": 0.4955,
+      "ml_score": "0-1",
+      "ml_score_prob": 0.1307,
+      "exp_goals_home": 0.76,
+      "exp_goals_away": 1.94
+    }
+  ]
+}

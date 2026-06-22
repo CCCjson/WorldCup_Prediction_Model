@@ -1,0 +1,5 @@
+date,group,home,away,neutral,p_home,p_draw,p_away,over_2.5,under_2.5,ml_score,ml_score_prob,exp_goals_home,exp_goals_away
+2026-06-22,J,Argentina,Austria,True,0.6533,0.2272,0.1195,0.4045,0.5955,1-0,0.1727,1.73,0.57
+2026-06-22,C,France,Iraq,True,0.7207,0.1937,0.0856,0.4432,0.5568,1-0,0.1684,1.96,0.5
+2026-06-22,C,Norway,Senegal,True,0.3633,0.2924,0.3443,0.3695,0.6305,1-1,0.1316,1.11,1.07
+2026-06-22,J,Jordan,Algeria,True,0.1416,0.2104,0.6481,0.5045,0.4955,0-1,0.1307,0.76,1.94
