@@ -28,18 +28,18 @@ MODELS = Path(__file__).resolve().parent / "models"
 REF_DATE = "2026-06-22"
 
 
-def main(n_sims: int = 50000):
+def main(n_sims: int = 50000, ref_date: str = REF_DATE):
     MODELS.mkdir(exist_ok=True)
 
-    print(f"[1/3] 训练并保存贝叶斯模型(截止 {REF_DATE})...")
-    model = _fit_model(REF_DATE)
+    print(f"[1/3] 训练并保存贝叶斯模型(截止 {ref_date})...")
+    model = _fit_model(ref_date)
     model.save(MODELS / "bayes_2026.npz")
     print(f"      r_hat_max={model.rhat_max_:.3f} div={model.divergences_} "
           f"teams={len(model.teams_)}")
 
     print(f"[2/3] 跑 {n_sims:,} 次锦标赛模拟(钉死已踢小组赛)...")
     cfg = load_2026_config()
-    known, n_known = build_known_results(cfg, load_matches(), REF_DATE)
+    known, n_known = build_known_results(cfg, load_matches(), ref_date)
     print(f"      条件化:钉死 {n_known} 场,采样 {72 - n_known} 场")
     res = simulate_tournament(model, cfg, n_sims=n_sims, known_results=known)
     res.to_csv(MODELS / "sim_2026.csv", index=False)
@@ -83,7 +83,7 @@ def main(n_sims: int = 50000):
     # 本届真实样本外评分(诚实性检查:模型在已踢完的 2026 比赛上的表现)
     try:
         from worldcup2026.eval.wc2026_score import run as wc_run
-        report["wc2026_oos"] = wc_run(cutoff=REF_DATE)
+        report["wc2026_oos"] = wc_run(cutoff=ref_date)
         o = report["wc2026_oos"]
         print(f"      WC2026 样本外({o['n_matches']} 场):贝叶斯 RPS "
               f"{o['bayes']['rps']:.4f} vs Elo {o['elo']['rps']:.4f} vs 均匀 "
@@ -99,4 +99,12 @@ def main(n_sims: int = 50000):
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    ap = argparse.ArgumentParser(description="生成 UI 工件(可指定实时截止日期)")
+    ap.add_argument("--date", default=REF_DATE,
+                    help=f"训练/条件化截止日期 YYYY-MM-DD(默认 {REF_DATE});"
+                         "赛事进行中每天推到当天即可滚动更新")
+    ap.add_argument("--n-sims", type=int, default=50000, help="蒙特卡洛模拟次数")
+    a = ap.parse_args()
+    main(n_sims=a.n_sims, ref_date=a.date)
