@@ -67,20 +67,22 @@ def _settle(sel_won: np.ndarray, dec_odds: np.ndarray, stake: np.ndarray) -> np.
 
 
 def backtest_market(name, my_p, odds_close, odds_open, sel_won,
-                    thresholds=DEFAULT_EDGE_THRESHOLDS):
+                    thresholds=DEFAULT_EDGE_THRESHOLDS, fade=False):
     """对一个市场的所有「选项×场次」候选注做回测。
 
     入参均为已展平的 1D 数组(每个候选下注项一行):
       my_p       我方概率;odds_close/open 该选项收/开盘赔率;sel_won 该选项是否命中。
+    fade=True 时反着买:选 edge < −thr 的选项(回测「跟模型对着干」是否能赢)。
     返回 dict:两种口径(bet@close / bet@open)× 多个 edge 阈值的 ROI/CLV/CI。
     """
-    out = {"market": name, "n_candidates": int(len(my_p)), "by_strategy": []}
+    out = {"market": name, "n_candidates": int(len(my_p)), "fade": fade,
+           "by_strategy": []}
 
     for strat, odds_bet in [("bet@close", odds_close), ("bet@open", odds_open)]:
         valid = ~np.isnan(odds_bet) & ~np.isnan(my_p)
         e = edge(my_p, odds_bet)
         for thr in thresholds:
-            pick = valid & (e > thr)
+            pick = valid & ((e < -thr) if fade else (e > thr))
             n = int(pick.sum())
             row = {"strategy": strat, "edge_threshold": thr, "n_bets": n}
             if n == 0:
@@ -94,18 +96,19 @@ def backtest_market(name, my_p, odds_close, odds_open, sel_won,
             pf_f = _settle(won, o, st_f)
             roi_f = pf_f.sum() / st_f.sum()
             lo_f, hi_f = _roi_ci(pf_f, st_f)
-            # 1/4 凯利
-            st_k = KELLY_FRACTION * kelly(my_p[pick], o)
+            # 1/4 凯利(反买全是负 edge,凯利按定义不下注 -> 无意义,置 None)
+            st_k = np.zeros(n) if fade else KELLY_FRACTION * kelly(my_p[pick], o)
             keep = st_k > 1e-9
             if keep.any():
                 pf_k = _settle(won[keep], o[keep], st_k[keep])
-                roi_k = pf_k.sum() / st_k[keep].sum()
+                roi_k = round(pf_k.sum() / st_k[keep].sum(), 4)
                 lo_k, hi_k = _roi_ci(pf_k, st_k[keep])
+                roi_k_ci = [round(lo_k, 4), round(hi_k, 4)]
             else:
-                roi_k = lo_k = hi_k = float("nan")
+                roi_k, roi_k_ci = None, None
             row.update(
                 roi_flat=round(roi_f, 4), roi_flat_ci=[round(lo_f, 4), round(hi_f, 4)],
-                roi_kelly=round(roi_k, 4), roi_kelly_ci=[round(lo_k, 4), round(hi_k, 4)],
+                roi_kelly=roi_k, roi_kelly_ci=roi_k_ci,
                 hit_rate=round(float(won.mean()), 4),
                 mean_edge=round(float(e[pick].mean()), 4),
             )
@@ -178,18 +181,28 @@ def _flatten_ou(df):
     return my_p.ravel(), oc.ravel(), oo.ravel(), won.ravel()
 
 
-def run():
-    club = build_club()
-    print(f"=== 俱乐部 proving ground:Dixon–Coles 走步前向({len(club):,} 场)===")
-    df = club_model_probs(club)
-    scored = df[df["p_home"].notna()]
+SCORED_CACHE = MODELS / "club_scored.parquet"
+
+
+def run(use_cache=True):
+    if use_cache and SCORED_CACHE.exists():
+        print(f"[cache] {SCORED_CACHE.name} present — loading scored probs")
+        scored = pd.read_parquet(SCORED_CACHE)
+    else:
+        club = build_club()
+        print(f"=== 俱乐部 proving ground:Dixon–Coles 走步前向({len(club):,} 场)===")
+        df = club_model_probs(club)
+        scored = df[df["p_home"].notna()].copy()
+        scored.to_parquet(SCORED_CACHE, index=False)
     print(f"可评分:{len(scored):,} 场\n")
 
     results = []
     p, oc, oo, won = _flatten_1x2(scored)
     results.append(backtest_market("1X2", p, oc, oo, won))
+    results.append(backtest_market("1X2(反买)", p, oc, oo, won, fade=True))
     p, oc, oo, won = _flatten_ou(scored)
     results.append(backtest_market("大小球 2.5", p, oc, oo, won))
+    results.append(backtest_market("大小球 2.5(反买)", p, oc, oo, won, fade=True))
 
     # 健全性:用收盘隐含概率当「我方概率」回测 1X2,ROI 应 ≈ −水位
     imp = devig_shin(scored["odds_home"], scored["odds_draw"], scored["odds_away"])
@@ -220,8 +233,9 @@ def _print_report(report):
             clv = f"{r.get('clv_mean', ''):>10}" if "clv_mean" in r else f"{'':>10}"
             clvp = (f"{r.get('clv_pct_positive', ''):>10}" if "clv_pct_positive" in r
                     else f"{'':>10}")
+            kelly_s = f"{r['roi_kelly']:>14.4f}" if r["roi_kelly"] is not None else f"{'—':>14}"
             print(f"{r['strategy']:<10}{r['edge_threshold']:>8.2f}{r['n_bets']:>8}"
-                  f"{r['roi_flat']:>12.4f}{r['roi_kelly']:>14.4f}"
+                  f"{r['roi_flat']:>12.4f}{kelly_s}"
                   f"{r['hit_rate']:>8.3f}{clv}{clvp}")
     s = report["sanity"]["by_strategy"][0]
     if s.get("roi_flat") is not None:
