@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import numpy as np
 from scipy.special import gammaln
-from scipy.stats import skellam
 
 MAX_GOALS = 9
 DEFAULT_WINDOW_YEARS = 8
@@ -42,6 +41,7 @@ class BayesPoisson:
         self.def_: np.ndarray | None = None   # (S, T)
         self.mu_: np.ndarray | None = None     # (S,)
         self.hf_: np.ndarray | None = None     # (S,)
+        self.rho_: np.ndarray | None = None    # (S,) Dixon–Coles 低分相关性
         self.rhat_max_ = None
         self.divergences_ = None
 
@@ -62,6 +62,11 @@ class BayesPoisson:
         hg = m["home_goals"].to_numpy().astype("int64")
         ag = m["away_goals"].to_numpy().astype("int64")
         is_host = (~m["neutral"].to_numpy()).astype(float)
+        # Dixon–Coles 低分格掩码((0,0)(0,1)(1,0)(1,1)),其余比分 τ=1
+        m00 = ((hg == 0) & (ag == 0)).astype(float)
+        m01 = ((hg == 0) & (ag == 1)).astype(float)
+        m10 = ((hg == 1) & (ag == 0)).astype(float)
+        m11 = ((hg == 1) & (ag == 1)).astype(float)
 
         coords = {"team": self.teams_}
         with pm.Model(coords=coords):
@@ -74,11 +79,18 @@ class BayesPoisson:
             attack = pm.Deterministic("attack", attack_z * sigma_att, dims="team")
             defense = pm.Deterministic("defense", defense_z * sigma_def, dims="team")
             home_field = pm.Normal("home_field", 0.25, 0.1)
+            rho = pm.Normal("rho", 0.0, 0.1)        # Dixon–Coles 低分相关性
 
             log_lh = mu + attack[hi] - defense[ai] + home_field * is_host
             log_la = mu + attack[ai] - defense[hi]
-            pm.Poisson("home_goals", mu=pm.math.exp(log_lh), observed=hg)
-            pm.Poisson("away_goals", mu=pm.math.exp(log_la), observed=ag)
+            lh_e = pm.math.exp(log_lh)
+            la_e = pm.math.exp(log_la)
+            pm.Poisson("home_goals", mu=lh_e, observed=hg)
+            pm.Poisson("away_goals", mu=la_e, observed=ag)
+            # DC τ 修正:仅 (0,0)(0,1)(1,0)(1,1) 四格偏离独立泊松,τ=1+rho*(...)
+            tau = 1.0 + rho * (-lh_e * la_e * m00 + lh_e * m01 + la_e * m10 - m11)
+            pm.Potential("dc_lowscore",
+                         pm.math.log(pm.math.clip(tau, 1e-9, np.inf)).sum())
 
             idata = pm.sample(
                 draws=draws, tune=tune, chains=chains, target_accept=target_accept,
@@ -86,7 +98,7 @@ class BayesPoisson:
             )
 
         import arviz as az
-        summary = az.summary(idata, var_names=["mu", "home_field", "sigma_att",
+        summary = az.summary(idata, var_names=["mu", "home_field", "rho", "sigma_att",
                                                "sigma_def", "attack", "defense"])
         rhat_col = "r_hat" if "r_hat" in summary.columns else "rhat"
         self.summary_ = summary
@@ -101,12 +113,14 @@ class BayesPoisson:
         self.def_ = post["defense"].stack(s=("chain", "draw")).transpose("s", "team").values
         self.mu_ = post["mu"].stack(s=("chain", "draw")).values
         self.hf_ = post["home_field"].stack(s=("chain", "draw")).values
+        self.rho_ = post["rho"].stack(s=("chain", "draw")).values
         # thinning:预测用 ~1000 个均匀抽样足以传播后验不确定性,且大幅加速 Skellam
         S = self.mu_.shape[0]
         if S > 1200:
             sel = np.linspace(0, S - 1, 1000).astype(int)
             self.att_, self.def_ = self.att_[sel], self.def_[sel]
             self.mu_, self.hf_ = self.mu_[sel], self.hf_[sel]
+            self.rho_ = self.rho_[sel]
         return self
 
     # -------------------------------------------------------------- predict
@@ -123,12 +137,12 @@ class BayesPoisson:
         return lh, la
 
     def predict_1x2(self, home, away, neutral=True) -> np.ndarray:
-        lh, la = self._lambda_samples(home, away, neutral)
-        # 每个后验抽样下,用 Skellam(独立泊松之差)精确算 1X2,再对抽样平均
-        p_draw = skellam.pmf(0, lh, la)
-        p_away = skellam.cdf(-1, lh, la)
-        p_home = 1.0 - p_draw - p_away
-        return np.array([p_home.mean(), p_draw.mean(), p_away.mean()])
+        # 从 DC 修正后的比分矩阵导出 1X2(与精确比分口径一致;9 球截断尾部可忽略)
+        mat = self.score_matrix(home, away, neutral)
+        p_home = float(np.tril(mat, -1).sum())   # 主队进球 > 客队 -> 主胜
+        p_draw = float(np.trace(mat))
+        p_away = float(np.triu(mat, 1).sum())    # 客队进球 > 主队 -> 客胜
+        return np.array([p_home, p_draw, p_away])
 
     def predict_proba_frame(self, frame) -> np.ndarray:
         out = np.empty((len(frame), 3))
@@ -137,8 +151,9 @@ class BayesPoisson:
         return out
 
     def score_matrix(self, home, away, neutral=True) -> np.ndarray:
-        """后验平均比分矩阵(0..max_goals),供 UI 热力图使用。"""
+        """后验平均比分矩阵(0..max_goals),含 Dixon–Coles 低分修正。"""
         lh, la = self._lambda_samples(home, away, neutral)
+        S = lh.shape[0]
         n = self.max_goals + 1
         gk = np.arange(n)
         # (S, n) 泊松 pmf
@@ -146,8 +161,16 @@ class BayesPoisson:
         logp_a = gk[None, :] * np.log(la)[:, None] - la[:, None] - gammaln(gk + 1)[None, :]
         ph = np.exp(logp_h)
         pa = np.exp(logp_a)
-        mat = np.einsum("si,sj->ij", ph, pa) / lh.shape[0]
-        return mat / mat.sum()
+        M = ph[:, :, None] * pa[:, None, :]        # (S,n,n) 每个后验样本的独立联合
+        # DC τ 修正四格(逐样本),再逐样本重归一,最后对后验平均
+        rho = self.rho_ if self.rho_ is not None else np.zeros(S)
+        M[:, 0, 0] *= 1.0 - lh * la * rho
+        M[:, 0, 1] *= 1.0 + lh * rho
+        M[:, 1, 0] *= 1.0 + la * rho
+        M[:, 1, 1] *= 1.0 - rho
+        np.clip(M, 0.0, None, out=M)
+        M /= M.sum(axis=(1, 2), keepdims=True)
+        return M.mean(axis=0)
 
     def predict_over_under(self, home, away, neutral=True, line=2.5):
         mat = self.score_matrix(home, away, neutral)
@@ -161,6 +184,7 @@ class BayesPoisson:
         """保存后验抽样,供 UI/模拟免重采样加载。"""
         np.savez_compressed(
             path, att=self.att_, defe=self.def_, mu=self.mu_, hf=self.hf_,
+            rho=self.rho_ if self.rho_ is not None else np.zeros_like(self.mu_),
             teams=np.array(self.teams_, dtype=object),
             rhat=float(self.rhat_max_), div=int(self.divergences_))
 
@@ -170,6 +194,7 @@ class BayesPoisson:
         obj = cls.__new__(cls)
         obj.att_, obj.def_ = d["att"], d["defe"]
         obj.mu_, obj.hf_ = d["mu"], d["hf"]
+        obj.rho_ = d["rho"] if "rho" in d.files else np.zeros_like(obj.mu_)
         obj.teams_ = list(d["teams"])
         obj.idx_ = {t: i for i, t in enumerate(obj.teams_)}
         obj.max_goals = MAX_GOALS
@@ -189,7 +214,8 @@ if __name__ == "__main__":
     bp = BayesPoisson(window_years=8).fit(train, ref_date="2026-01-01")
     print(f"\nfit: {len(bp.teams_)} teams, {time.time()-t0:.1f}s")
     print(f"r_hat_max={bp.rhat_max_:.4f}  divergences={bp.divergences_}  ess_min={bp.ess_min_:.0f}")
-    print(f"mu={bp.mu_.mean():.3f}  home_field={bp.hf_.mean():.3f}")
+    print(f"mu={bp.mu_.mean():.3f}  home_field={bp.hf_.mean():.3f}  "
+          f"rho={bp.rho_.mean():+.4f}  (DC 低分相关性,典型 ~−0.1)")
     for h, a in [("Spain", "Brazil"), ("Argentina", "France"), ("Germany", "Japan")]:
         p = bp.predict_1x2(h, a, neutral=True)
         ou = bp.predict_over_under(h, a, neutral=True)
