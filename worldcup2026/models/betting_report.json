@@ -1,0 +1,276 @@
+{
+  "proving_ground": "club big-5 (football-data)",
+  "n_scored": 13589,
+  "markets": [
+    {
+      "market": "1X2",
+      "n_candidates": 40767,
+      "by_strategy": [
+        {
+          "strategy": "bet@close",
+          "edge_threshold": 0.0,
+          "n_bets": 18050,
+          "roi_flat": -0.0587,
+          "roi_flat_ci": [
+            -0.0866,
+            -0.0317
+          ],
+          "roi_kelly": -0.0624,
+          "roi_kelly_ci": [
+            -0.0939,
+            -0.0303
+          ],
+          "hit_rate": 0.2765,
+          "mean_edge": 0.2578
+        },
+        {
+          "strategy": "bet@close",
+          "edge_threshold": 0.02,
+          "n_bets": 16478,
+          "roi_flat": -0.0545,
+          "roi_flat_ci": [
+            -0.0828,
+            -0.0241
+          ],
+          "roi_kelly": -0.062,
+          "roi_kelly_ci": [
+            -0.0918,
+            -0.0314
+          ],
+          "hit_rate": 0.2713,
+          "mean_edge": 0.2814
+        },
+        {
+          "strategy": "bet@close",
+          "edge_threshold": 0.05,
+          "n_bets": 14430,
+          "roi_flat": -0.0559,
+          "roi_flat_ci": [
+            -0.0873,
+            -0.023
+          ],
+          "roi_kelly": -0.063,
+          "roi_kelly_ci": [
+            -0.0956,
+            -0.0325
+          ],
+          "hit_rate": 0.2622,
+          "mean_edge": 0.3165
+        },
+        {
+          "strategy": "bet@open",
+          "edge_threshold": 0.0,
+          "n_bets": 17893,
+          "roi_flat": -0.059,
+          "roi_flat_ci": [
+            -0.0867,
+            -0.0317
+          ],
+          "roi_kelly": -0.0681,
+          "roi_kelly_ci": [
+            -0.0992,
+            -0.0382
+          ],
+          "hit_rate": 0.2813,
+          "mean_edge": 0.2337,
+          "clv_mean": -0.0012,
+          "clv_pct_positive": 0.483
+        },
+        {
+          "strategy": "bet@open",
+          "edge_threshold": 0.02,
+          "n_bets": 16330,
+          "roi_flat": -0.0624,
+          "roi_flat_ci": [
+            -0.0905,
+            -0.0334
+          ],
+          "roi_kelly": -0.0687,
+          "roi_kelly_ci": [
+            -0.1008,
+            -0.0382
+          ],
+          "hit_rate": 0.274,
+          "mean_edge": 0.2551,
+          "clv_mean": -0.0017,
+          "clv_pct_positive": 0.4783
+        },
+        {
+          "strategy": "bet@open",
+          "edge_threshold": 0.05,
+          "n_bets": 14073,
+          "roi_flat": -0.0706,
+          "roi_flat_ci": [
+            -0.1019,
+            -0.0386
+          ],
+          "roi_kelly": -0.0704,
+          "roi_kelly_ci": [
+            -0.1036,
+            -0.0377
+          ],
+          "hit_rate": 0.2628,
+          "mean_edge": 0.2905,
+          "clv_mean": -0.0022,
+          "clv_pct_positive": 0.4723
+        }
+      ]
+    },
+    {
+      "market": "大小球 2.5",
+      "n_candidates": 18386,
+      "by_strategy": [
+        {
+          "strategy": "bet@close",
+          "edge_threshold": 0.0,
+          "n_bets": 7887,
+          "roi_flat": -0.0354,
+          "roi_flat_ci": [
+            -0.0595,
+            -0.0116
+          ],
+          "roi_kelly": -0.0382,
+          "roi_kelly_ci": [
+            -0.0713,
+            -0.0086
+          ],
+          "hit_rate": 0.4675,
+          "mean_edge": 0.1475
+        },
+        {
+          "strategy": "bet@close",
+          "edge_threshold": 0.02,
+          "n_bets": 7018,
+          "roi_flat": -0.0341,
+          "roi_flat_ci": [
+            -0.0595,
+            -0.0069
+          ],
+          "roi_kelly": -0.038,
+          "roi_kelly_ci": [
+            -0.0676,
+            -0.0076
+          ],
+          "hit_rate": 0.463,
+          "mean_edge": 0.1645
+        },
+        {
+          "strategy": "bet@close",
+          "edge_threshold": 0.05,
+          "n_bets": 5806,
+          "roi_flat": -0.049,
+          "roi_flat_ci": [
+            -0.0759,
+            -0.02
+          ],
+          "roi_kelly": -0.0427,
+          "roi_kelly_ci": [
+            -0.0743,
+            -0.0108
+          ],
+          "hit_rate": 0.447,
+          "mean_edge": 0.1916
+        },
+        {
+          "strategy": "bet@open",
+          "edge_threshold": 0.0,
+          "n_bets": 7681,
+          "roi_flat": -0.0403,
+          "roi_flat_ci": [
+            -0.063,
+            -0.0174
+          ],
+          "roi_kelly": -0.0334,
+          "roi_kelly_ci": [
+            -0.0632,
+            -0.0023
+          ],
+          "hit_rate": 0.4756,
+          "mean_edge": 0.1326,
+          "clv_mean": -0.0015,
+          "clv_pct_positive": 0.4662
+        },
+        {
+          "strategy": "bet@open",
+          "edge_threshold": 0.02,
+          "n_bets": 6817,
+          "roi_flat": -0.0478,
+          "roi_flat_ci": [
+            -0.0725,
+            -0.0222
+          ],
+          "roi_kelly": -0.0341,
+          "roi_kelly_ci": [
+            -0.0637,
+            -0.0037
+          ],
+          "hit_rate": 0.4669,
+          "mean_edge": 0.1481,
+          "clv_mean": -0.0016,
+          "clv_pct_positive": 0.4655
+        },
+        {
+          "strategy": "bet@open",
+          "edge_threshold": 0.05,
+          "n_bets": 5511,
+          "roi_flat": -0.0438,
+          "roi_flat_ci": [
+            -0.0695,
+            -0.016
+          ],
+          "roi_kelly": -0.0338,
+          "roi_kelly_ci": [
+            -0.0647,
+            -0.0003
+          ],
+          "hit_rate": 0.4602,
+          "mean_edge": 0.1751,
+          "clv_mean": -0.0017,
+          "clv_pct_positive": 0.4625
+        }
+      ]
+    }
+  ],
+  "sanity": {
+    "market": "健全性:盲押收盘线",
+    "n_candidates": 40767,
+    "by_strategy": [
+      {
+        "strategy": "bet@close",
+        "edge_threshold": -1.0,
+        "n_bets": 40767,
+        "roi_flat": -0.037,
+        "roi_flat_ci": [
+          -0.0536,
+          -0.0204
+        ],
+        "roi_kelly": NaN,
+        "roi_kelly_ci": [
+          NaN,
+          NaN
+        ],
+        "hit_rate": 0.3333,
+        "mean_edge": -0.0252
+      },
+      {
+        "strategy": "bet@open",
+        "edge_threshold": -1.0,
+        "n_bets": 40767,
+        "roi_flat": -0.037,
+        "roi_flat_ci": [
+          -0.0531,
+          -0.0205
+        ],
+        "roi_kelly": NaN,
+        "roi_kelly_ci": [
+          NaN,
+          NaN
+        ],
+        "hit_rate": 0.3333,
+        "mean_edge": -0.0252,
+        "clv_mean": 0.0,
+        "clv_pct_positive": 0.0
+      }
+    ]
+  }
+}
